@@ -1,0 +1,36 @@
+Build application (Windows PowerShell):
+  powershell -ExecutionPolicy Bypass -File .\build.ps1
+
+Compile regression tests from this directory:
+  & "$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319\csc.exe" /nologo /target:exe /main:Tests /reference:System.dll /reference:System.Core.dll /reference:System.Drawing.dll /reference:System.Windows.Forms.dll /out:PhotoSieve.Tests.exe PhotoSieve.cs UiControls.cs Tests.cs
+
+Run tests using a NEW, disposable working folder:
+  .\PhotoSieve.Tests.exe .\test-work\photos
+
+The harness writes generated JPEG fixtures and exported copies to the given
+folder and its parent. Do not point it at a folder containing personal photos.
+It does not invoke recycle/delete actions.
+
+Core tests cover exact SHA256 grouping, recompression, resizing, unrelated
+content, corrupted images, Unicode paths, extension casing, recursive scanning,
+cancellation, timestamp and content-change guards, export integrity, Hamming
+boundaries, color/aspect guards, non-transitive grouping and GUI rendering.
+
+EXIF checks are optional: place normal.jpg and orientation_2.jpg through
+orientation_8.jpg in an orientation-test folder alongside the supplied photo
+folder. These files should encode the same scene with the corresponding EXIF
+orientation and inverse physical transform. All eight orientations were
+validated for the delivered build using generated Pillow fixtures.
+
+The delivered build passed 28 checks with EXIF fixtures present.
+Recycle behavior on real user volumes was not exercised by this test harness.
+
+GUI interaction checks for version 1.1 (after creating the core fixtures):
+  & "$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319\csc.exe" /nologo /target:exe /main:GuiTests /reference:System.dll /reference:System.Core.dll /reference:System.Drawing.dll /reference:System.Windows.Forms.dll /out:PhotoSieve.GuiTests.exe PhotoSieve.cs UiControls.cs GuiTests.cs
+  .\PhotoSieve.GuiTests.exe .\test-work\photos .\test-work\gui-check
+
+The GUI harness runs a Windows message loop and checks folder drag/drop,
+background scanning, selection, retention, selected-size statistics, clearing,
+the actual comparison dialog, window sizing, pagination and cancellation.
+It saves rendered previews and disposable copies of generated fixture images.
+All 18 interaction checks passed; no deletion is invoked.

@@ -1,0 +1,4 @@
+# build outputs
+src/*.exe
+src/test-work/
+*.pdb
